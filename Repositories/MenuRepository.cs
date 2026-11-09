@@ -27,12 +27,12 @@ public class MenuRepository : RepositoryBase
 
     public async Task AddMenuItemAsync(long categoryId, string name, string description, decimal price, long userId)
     {
-        await using var cmd = CreateCommand("INSERT INTO menu_items (category_id, name, description, price, is_available, updated_by) VALUES (@cat, @name, @desc, @price, TRUE, @user);");
-        cmd.Parameters.AddWithValue("cat", categoryId);
-        cmd.Parameters.AddWithValue("name", name);
-        cmd.Parameters.AddWithValue("desc", description);
-        cmd.Parameters.AddWithValue("price", price);
-        cmd.Parameters.AddWithValue("user", userId);
+        await using var cmd = CreateCommand("sp_add_menu_item", isStoredProcedure: true);
+        cmd.Parameters.AddWithValue("p_category_id", categoryId);
+        cmd.Parameters.AddWithValue("p_name", name);
+        cmd.Parameters.AddWithValue("p_description", description);
+        cmd.Parameters.AddWithValue("p_price", price);
+        cmd.Parameters.AddWithValue("p_user_id", userId);
         await cmd.ExecuteNonQueryAsync();
     }
 

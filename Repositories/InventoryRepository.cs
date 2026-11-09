@@ -29,7 +29,7 @@ public class InventoryRepository : RepositoryBase
     public async Task<List<Ingredient>> GetAllIngredientsAsync()
     {
         var list = new List<Ingredient>();
-        await using var cmd = CreateCommand("SELECT id, name, unit, stock_quantity, min_stock FROM ingredients WHERE is_deleted = FALSE ORDER BY id;");
+        await using var cmd = CreateCommand("SELECT id, name, unit, stock_quantity, min_stock FROM v_active_ingredients ORDER BY id;");
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -44,11 +44,12 @@ public class InventoryRepository : RepositoryBase
         return list;
     }
 
-    public async Task AddStockAsync(long ingredientId, decimal amount)
+    public async Task AddStockAsync(long ingredientId, decimal amount, long userId)
     {
-        await using var cmd = CreateCommand("UPDATE ingredients SET stock_quantity = stock_quantity + @amount, updated_at = NOW() WHERE id = @id;");
-        cmd.Parameters.AddWithValue("amount", amount);
-        cmd.Parameters.AddWithValue("id", ingredientId);
+        await using var cmd = CreateCommand("sp_add_stock", isStoredProcedure: true);
+        cmd.Parameters.AddWithValue("p_amount", amount);
+        cmd.Parameters.AddWithValue("p_ingredient_id", ingredientId);
+        cmd.Parameters.AddWithValue("p_user_id", userId);
         await cmd.ExecuteNonQueryAsync();
     }
 }
